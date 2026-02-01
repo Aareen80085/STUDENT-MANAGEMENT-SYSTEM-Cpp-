@@ -1,173 +1,225 @@
 #include <iostream>
+#include <fstream>
 using namespace std;
 
 class Student {
 private:
-  // int rollNo = 21;
-  // string Name = "Aareen";
-  // int age = 20;
-  // string course = "Btech";
-
-  int rollNo;
-  string Name;
-  int age;
-  string course;
+    int rollNo;
+    string name;
+    int age;
+    string course;
 
 public:
-  void setData(int rollNo, string Name, int age, string course) {
+    void setData() {
+        cin.ignore();   
 
-    cout << "Enter Name: ";
-    cin >> Name;
+        cout << "Enter Name: ";
+        getline(cin, name);
 
-    cout << "Enter Roll Number: ";
-    cin >> rollNo;
+        cout << "Enter Roll Number: ";
+        cin >> rollNo;
 
-    cout << "Enter age";
-    cin >> age;
+        cout << "Enter Age: ";
+        cin >> age;
 
-    cout << "Enter Course: ";
-    cin >> course;
-  };
+        cin.ignore();   
+        cout << "Enter Course: ";
+        getline(cin, course);
+    }
 
-  void displayData() {
-    cout << rollNo << "\t" << Name << "\t" << course << "\t" << age << course
-         << endl;
-  }
-  int getRoll() { return rollNo; }
+    void setDataDirect(int r, string n, int a, string c) {
+        rollNo = r;
+        name = n;
+        age = a;
+        course = c;
+    }
 
-  void updateData() {
-    cout << "Enter New Name: ";
-    cin >> Name;
+    void displayData() {
+        cout << rollNo << "\t" << name << "\t" << course << "\t" << age << endl;
+    }
 
-    cout << "Enter New Roll no: ";
-    cin >> rollNo;
+    int getRoll() { return rollNo; }
+    string getName() { return name; }
+    int getAge() { return age; }
+    string getCourse() { return course; }
 
-    cout << "Enter New Age: ";
-    cin >> age;
+    void updateData() {
+        cin.ignore();
 
-    cout << "Enter New Course: ";
-    cin >> course;
-  }
+        cout << "Enter New Name: ";
+        getline(cin, name);
+
+        cout << "Enter New Roll No: ";
+        cin >> rollNo;
+
+        cout << "Enter New Age: ";
+        cin >> age;
+
+        cin.ignore();
+        cout << "Enter New Course: ";
+        getline(cin, course);
+    }
 };
 
-// Global array to store students and count
-const int MAX_STUDENTS = 100;
-Student students[MAX_STUDENTS];
+const int MAX = 100;
+Student students[MAX];
 int countStudents = 0;
 
-// Operations
+void saveToFile() {
+    ofstream out("students.txt");
+
+    out << countStudents << endl;
+
+    for (int i = 0; i < countStudents; i++) {
+        out << students[i].getRoll() << endl;
+        out << students[i].getName() << endl;
+        out << students[i].getAge() << endl;
+        out << students[i].getCourse() << endl;
+    }
+
+    out.close();
+}
+
+void loadFromFile() {
+    ifstream in("students.txt");
+    if (!in) return;
+
+    in >> countStudents;
+    in.ignore();
+
+    for (int i = 0; i < countStudents; i++) {
+        int roll, age;
+        string name, course;
+
+        in >> roll;
+        in.ignore();
+        getline(in, name);
+
+        in >> age;
+        in.ignore();
+        getline(in, course);
+
+        students[i].setDataDirect(roll, name, age, course);
+    }
+
+    in.close();
+}
+
 void addStudent() {
-  if (countStudents >= MAX_STUDENTS) {
-    cout << "Cannot add more students!\n";
-    return;
-  }
-  students[countStudents].setData(0, "", 0, "");
-  countStudents++;
-  cout << "Student Added Successfully!\n";
+    if (countStudents >= MAX) return;
+
+    students[countStudents].setData();
+    countStudents++;
+    saveToFile();
+
+    cout << "Student Added Successfully!\n";
 }
 
 void displayStudents() {
-  if (countStudents == 0) {
-    cout << "No records found!\n";
-    return;
-  }
+    if (countStudents == 0) {
+        cout << "No Records Found!\n";
+        return;
+    }
 
-  cout << "\nRoll\tName\tCourse\tMarks\n";
-  for (int i = 0; i < countStudents; i++) {
-    students[i].displayData();
-  }
+    cout << "\nRoll\tName\tCourse\tAge\n";
+    cout << "---------------------------------\n";
+
+    for (int i = 0; i < countStudents; i++)
+        students[i].displayData();
 }
 
 void searchStudent() {
-  int roll;
-  cout << "Enter Roll Number to Search: ";
-  cin >> roll;
+    int roll;
+    cout << "Enter Roll Number: ";
+    cin >> roll;
 
-  for (int i = 0; i < countStudents; i++) {
-    if (students[i].getRoll() == roll) {
-      cout << "Student Found:\n";
-      students[i].displayData();
-      return;
+    for (int i = 0; i < countStudents; i++) {
+        if (students[i].getRoll() == roll) {
+            cout << "\nStudent Found:\n";
+            students[i].displayData();
+            return;
+        }
     }
-  }
-  cout << "Student Not Found!\n";
+
+    cout << "Student Not Found!\n";
 }
 
 void updateStudent() {
-  int roll;
-  cout << "Enter Roll Number to Update: ";
-  cin >> roll;
+    int roll;
+    cout << "Enter Roll Number to Update: ";
+    cin >> roll;
 
-  for (int i = 0; i < countStudents; i++) {
-    if (students[i].getRoll() == roll) {
-      students[i].updateData();
-      cout << "Student Updated Successfully!\n";
-      return;
+    for (int i = 0; i < countStudents; i++) {
+        if (students[i].getRoll() == roll) {
+            students[i].updateData();
+            saveToFile();
+            cout << "Student Updated Successfully!\n";
+            return;
+        }
     }
-  }
-  cout << "Student Not Found!\n";
+
+    cout << "Student Not Found!\n";
 }
 
 void deleteStudent() {
-  int roll;
-  cout << "Enter Roll Number to Delete: ";
-  cin >> roll;
+    int roll;
+    cout << "Enter Roll Number to Delete: ";
+    cin >> roll;
 
-  for (int i = 0; i < countStudents; i++) {
-    if (students[i].getRoll() == roll) {
-      for (int j = i; j < countStudents - 1; j++) {
-        students[j] = students[j + 1];
-      }
-      countStudents--;
-      cout << "Student Deleted Successfully!\n";
-      return;
+    for (int i = 0; i < countStudents; i++) {
+        if (students[i].getRoll() == roll) {
+            for (int j = i; j < countStudents - 1; j++)
+                students[j] = students[j + 1];
+
+            countStudents--;
+            saveToFile();
+            cout << "Student Deleted Successfully!\n";
+            return;
+        }
     }
-  }
-  cout << "Student Not Found!\n";
+
+    cout << "Student Not Found!\n";
 }
 
-// Menu
 void showMenu() {
-  cout << "\n===== STUDENT MANAGEMENT SYSTEM =====\n";
-  cout << "1. Add Student\n";
-  cout << "2. Display All Students\n";
-  cout << "3. Search Student\n";
-  cout << "4. Update Student\n";
-  cout << "5. Delete Student\n";
-  cout << "6. Exit\n";
-  cout << "Enter your choice: ";
+    cout << "\n===== STUDENT MANAGEMENT SYSTEM =====\n";
+    cout << "1. Add Student\n";
+    cout << "2. Display Students\n";
+    cout << "3. Search Student\n";
+    cout << "4. Update Student\n";
+    cout << "5. Delete Student\n";
+    cout << "6. Exit\n";
+    cout << "Enter Choice: ";
 }
 
-// Main Function
 int main() {
-  int choice;
-  do {
-    showMenu();
-    cin >> choice;
+    loadFromFile();
 
-    switch (choice) {
-    case 1:
-      addStudent();
-      break;
-    case 2:
-      displayStudents();
-      break;
-    case 3:
-      searchStudent();
-      break;
-    case 4:
-      updateStudent();
-      break;
-    case 5:
-      deleteStudent();
-      break;
-    case 6:
-      cout << "Data Saved. Exiting Program...\n";
-      break;
-    default:
-      cout << "Invalid Choice!\n";
-    }
-  } while (choice != 6);
+    int choice;
+    do {
+        showMenu();
 
-  return 0;
+        if (!(cin >> choice)) {
+            cin.clear();
+            cin.ignore(1000, '\n');
+            continue;
+        }
+
+        switch (choice) {
+        case 1: addStudent(); break;
+        case 2: displayStudents(); break;
+        case 3: searchStudent(); break;
+        case 4: updateStudent(); break;
+        case 5: deleteStudent(); break;
+        case 6:
+            saveToFile();
+            cout << "Exiting Program...\n";
+            break;
+        default:
+            cout << "Invalid Choice!\n";
+        }
+
+    } while (choice != 6);
+
+    return 0;
 }
