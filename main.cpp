@@ -2,6 +2,8 @@
 #include <fstream>
 #include <limits>
 using namespace std;
+-
+/* ================= STUDENT CLASS ================= */
 
 class Student {
 private:
@@ -30,10 +32,13 @@ public:
     }
 
     void display() const {
-        cout << rollNo << "\t" << name << "\t" << course << "\t" << age << endl;
+        cout << rollNo << "\t" << name << "\t"
+             << course << "\t" << age << endl;
     }
 
-    int getRoll() const { return rollNo; }
+    int getRoll() const {
+        return rollNo;
+    }
 
     void update() {
         cin.ignore(numeric_limits<streamsize>::max(), '\n');
@@ -51,31 +56,42 @@ public:
     }
 
     void write(ofstream &out) {
-        out << rollNo << endl
-            << name << endl
-            << age << endl
-            << course << endl;
+        out << rollNo << endl;
+        out << name << endl;
+        out << age << endl;
+        out << course << endl;
     }
 
     void read(ifstream &in) {
         in >> rollNo;
         in.ignore();
+
         getline(in, name);
+
         in >> age;
         in.ignore();
+
         getline(in, course);
     }
 };
+
+/* ================= GLOBAL DATA ================= */
 
 const int MAX = 100;
 Student students[MAX];
 int countStudents = 0;
 
+/* ================= FILE HANDLING ================= */
+
 void saveToFile() {
     ofstream out("students.txt");
+
     out << countStudents << endl;
-    for (int i = 0; i < countStudents; i++)
+
+    for (int i = 0; i < countStudents; i++) {
         students[i].write(out);
+    }
+
     out.close();
 }
 
@@ -84,15 +100,25 @@ void loadFromFile() {
     if (!in) return;
 
     in >> countStudents;
-    for (int i = 0; i < countStudents; i++)
+
+    for (int i = 0; i < countStudents; i++) {
         students[i].read(in);
+    }
 
     in.close();
 }
 
+/* ================= OPERATIONS ================= */
+
 void addStudent() {
-    if (countStudents >= MAX) return;
-    students[countStudents++].input();
+    if (countStudents >= MAX) {
+        cout << "Student limit reached!\n";
+        return;
+    }
+
+    students[countStudents].input();
+    countStudents++;
+
     saveToFile();
     cout << "Student Added Successfully!\n";
 }
@@ -105,8 +131,10 @@ void displayStudents() {
 
     cout << "\nRoll\tName\tCourse\tAge\n";
     cout << "--------------------------------\n";
-    for (int i = 0; i < countStudents; i++)
+
+    for (int i = 0; i < countStudents; i++) {
         students[i].display();
+    }
 }
 
 void searchStudent() {
@@ -120,6 +148,7 @@ void searchStudent() {
             return;
         }
     }
+
     cout << "Student Not Found!\n";
 }
 
@@ -136,6 +165,7 @@ void updateStudent() {
             return;
         }
     }
+
     cout << "Student Not Found!\n";
 }
 
@@ -146,8 +176,9 @@ void deleteStudent() {
 
     for (int i = 0; i < countStudents; i++) {
         if (students[i].getRoll() == roll) {
-            for (int j = i; j < countStudents - 1; j++)
+            for (int j = i; j < countStudents - 1; j++) {
                 students[j] = students[j + 1];
+            }
 
             countStudents--;
             saveToFile();
@@ -155,8 +186,11 @@ void deleteStudent() {
             return;
         }
     }
+
     cout << "Student Not Found!\n";
 }
+
+/* ================= MENU ================= */
 
 void menu() {
     cout << "\n===== STUDENT MANAGEMENT SYSTEM =====\n";
@@ -169,13 +203,22 @@ void menu() {
     cout << "Enter Choice: ";
 }
 
+/* ================= MAIN ================= */
+
 int main() {
     loadFromFile();
+
     int choice;
 
     do {
         menu();
-        cin >> choice;
+
+        if (!(cin >> choice)) {
+            cin.clear();
+            cin.ignore(numeric_limits<streamsize>::max(), '\n');
+            cout << "Invalid input! Enter number only.\n";
+            continue;
+        }
 
         switch (choice) {
             case 1: addStudent(); break;
@@ -183,9 +226,10 @@ int main() {
             case 3: searchStudent(); break;
             case 4: updateStudent(); break;
             case 5: deleteStudent(); break;
-            case 6: cout << "Exiting...\n"; break;
+            case 6: cout << "Exiting Program...\n"; break;
             default: cout << "Invalid Choice!\n";
         }
+
     } while (choice != 6);
 
     return 0;
